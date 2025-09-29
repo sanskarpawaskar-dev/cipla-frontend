@@ -1,0 +1,269 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  --toastify-toast-min-height: 50px !important;
+  --toastify-text-color-light: #020202 !important;
+}
+
+.Toastify__toast {
+  margin-bottom: 0.5rem !important;
+  border-radius: 1px !important;
+}
+
+.Toastify__close-button {
+  align-self: center !important;
+  opacity: 0.8 !important;
+}
+
+@layer base {
+  html {
+    font-family: "Poppins", sans-serif !important;
+    font-feature-settings: "kern" !important;
+    -webkit-font-smoothing: antialiased;
+    /* letter-spacing: -0.5px; */
+  }
+}
+
+@layer components {
+  .btn-solid {
+    @apply flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/85 disabled:opacity-60;
+  }
+  .btn-small {
+    @apply px-4 py-1;
+  }
+  .page-heading {
+    @apply text-2xl font-bold text-primary;
+  }
+}
+
+input.defaultCheckbox::before {
+  content: url(../src/assets/svg/checked.svg);
+  color: white;
+  opacity: 0;
+  height: 16px;
+  width: 16px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0px);
+}
+
+input:checked.defaultCheckbox::before {
+  opacity: 1;
+}
+
+.pagination > button {
+  text-align: center;
+  padding: 0 0.5rem 0 0.5rem;
+  border-radius: 4px;
+  margin: 0.5rem 0.5rem;
+}
+.w-95Perc {
+  width: 95%;
+}
+
+.border-default {
+  border: 1px solid #9ca3af;
+}
+::-webkit-scrollbar {
+  margin: 2px;
+  width: 6px;
+  height: 7px;
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #dbdee2;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.default-scrollbar textarea::-webkit-scrollbar,
+textarea.MuiInputBase-input::-webkit-scrollbar,
+.default-scrollbar textarea::-webkit-scrollbar-thumb,
+textarea.MuiInputBase-input::-webkit-scrollbar-thumb,
+.default-scrollbar textarea::-webkit-scrollbar-track,
+textarea.MuiInputBase-input::-webkit-scrollbar-track {
+  all: unset !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.toaster-container {
+  background-color: rgba(0, 0, 0, 0.322);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.border-dashed-spaced {
+  /*Horizontal*/
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='7' ry='7' stroke='%23C8C8C8FF' stroke-width='2' stroke-dasharray='6%2c 10' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e");
+  border-radius: 7px;
+}
+
+.cornerBorder {
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23C8C8C8FF' stroke-width='2' stroke-dasharray='18%2c14' stroke-dashoffset='7' stroke-linecap='square'/%3e%3c/svg%3e");
+}
+
+.rdw-option-wrapper {
+  height: 100% !important;
+}
+
+.MuiTableHead-root {
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.funnel-pipeline-chart {
+  clip-path: polygon(10% 0, 90% 0, 60% 100%, 40% 100%) !important;
+}
+.funnel-pipeline-chart .funnel-pipeline-chart-row:last-child {
+  padding-bottom: 10px !important;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatar-animation {
+  animation: pulsate-avatar infinite 2s;
+}
+
+@keyframes pulsate-avatar {
+  0% {
+    box-shadow: 0 0 0 0 rgb(78 13 163);
+  }
+  50% {
+    box-shadow: 0 0 10px 20px rgb(78 13 163);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(78 13 163);
+  }
+}
+
+@supports not (gap: 1rem) {
+  .flex-row > *:not(:last-child) {
+    margin-right: 1rem; /* Horizontal spacing for flex-row */
+  }
+  .flex-col > *:not(:last-child) {
+    margin-bottom: 1rem; /* Vertical spacing for flex-col */
+  }
+}
+
+/* datepicker.css */
+.react-datepicker {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 1rem !important;
+  background-color: #ffffff;
+  color: #000;
+  border: 1px solid #aeaeae;
+  border-radius: 0.3rem;
+  display: inline-block;
+  position: relative;
+  line-height: initial;
+}
+
+.react-datepicker__navigation {
+  align-items: center;
+  background: none;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  position: absolute;
+  top: 10px !important;
+  padding: 0;
+  border: none;
+  z-index: 1;
+  height: 32px;
+  width: 32px;
+  text-indent: -999em;
+  overflow: hidden;
+}
+
+.react-datepicker__day--keyboard-selected,
+.react-datepicker__month-text--keyboard-selected,
+.react-datepicker__quarter-text--keyboard-selected,
+.react-datepicker__year-text--keyboard-selected {
+  border-radius: 0.3rem;
+  background-color: #4e0da3 !important;
+  color: #ffffff !important;
+}
+
+.react-datepicker__day--keyboard-selected:not([aria-disabled="true"]):hover,
+.react-datepicker__month-text--keyboard-selected:not(
+    [aria-disabled="true"]
+  ):hover,
+.react-datepicker__quarter-text--keyboard-selected:not(
+    [aria-disabled="true"]
+  ):hover,
+.react-datepicker__year-text--keyboard-selected:not(
+    [aria-disabled="true"]
+  ):hover {
+  background-color: #4e0da3 !important;
+}
+
+.react-datepicker__header {
+  background-color: #fff !important;
+  border-bottom: 0px solid #aeaeae !important;
+}
+
+.react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle {
+  fill: #fff !important;
+  color: #fff !important;
+}
+
+.react-datepicker__month .react-datepicker__month-text,
+.react-datepicker__month .react-datepicker__quarter-text {
+  display: inline-block;
+  width: 5rem !important;
+  margin: 3px !important;
+}
+
+.react-datepicker-year-header {
+  font-size: 1.2rem !important;
+}
+
+.tox .tox-edit-area::before {
+  opacity: 0 !important;
+}
+
+.color-input input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 60px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+.color-input input::-webkit-color-swatch {
+  border-radius: 4px;
+  border: none;
+}
+.color-input input::-moz-color-swatch {
+  border-radius: 4px;
+  border: none;
+}
