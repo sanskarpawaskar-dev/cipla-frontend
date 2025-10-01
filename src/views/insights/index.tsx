@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, X, Calendar } from 'lucide-react';
+import { addSheets } from '../../axios/api';
 
 // Type definitions
 interface SalesData {
@@ -55,38 +56,36 @@ interface UploadResponse {
     setFiles((prev) => ({ ...prev, [fileType]: file }));
   };
 
-  const handleUpload = async () => {
-    if (!files.file1 || !files.file2 || !brandName || !uploadDate) {
-      alert("Please fill all fields and select both files");
-      return;
-    }
-    setIsUploading(true);
+ const handleUpload = async () => {
+  if (!files.file1 || !files.file2 || !managerType || !uploadDate) {
+    alert("Please fill all fields and select both files");
+    return;
+  }
+  setIsUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("file1", files.file1);
-      formData.append("file2", files.file2);
-      formData.append("brandName", brandName);
-      formData.append("dataDate", uploadDate);
-
-      const response = await fetch("/api/upload", { method: "POST", body: formData });
-      const result: UploadResponse = await response.json();
-
-      if (result.success) {
-        setSelectedBrand(brandName);
-        if (result.data) setData(result.data);
-        alert("Files uploaded successfully!");
-        setIsModalOpen(false); // close modal after upload
-      } else {
-        alert(`Upload failed: ${result.message}`);
+  try {
+    const response = await addSheets(
+      { file1: files.file1, file2: files.file2 },
+      {
+        brandId: "selectedBrandId",  // you should have this from state/props
+        brandName: brandName, // or current brand name
+        managerType,
+        datadate: uploadDate,
       }
-    } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
+    );
+
+    if (response.data) {
+      alert("Files uploaded successfully!");
+      setIsModalOpen(false);
     }
-  };
+  } catch (err) {
+    console.error("Upload failed:", err);
+    alert("Upload failed. Please try again.");
+  } finally {
+    setIsUploading(false);
+  }
+};
+
 
   // Placeholder brand name - will receive as props
 //   const brandName = 'Indaflo G';
@@ -355,72 +354,102 @@ interface UploadResponse {
       {/* Add Sheet Modal */}
       {/* --- Modal with Upload Form --- */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Upload Excel Files</h2>
-                <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                  <X size={24} />
-                </button>
-              </div>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">Upload Excel Files</h2>
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <X size={24} />
+        </button>
+      </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand Name</label>
-                  <input
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => setBrandName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter brand name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Data Date</label>
-                  <input
-                    type="date"
-                    value={uploadDate}
-                    onChange={(e) => setUploadDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Regional Manager File</label>
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => handleFileUpload("file1", e.target.files?.[0] || null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sales Data File</label>
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => handleFileUpload("file2", e.target.files?.[0] || null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Manager Type Dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Manager Type
+          </label>
+       <select
+  value={managerType}
+  onChange={(e) => setManagerType(e.target.value as ManagerType)}
+  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+>
+  <option value="RBM">RBM</option>
+  <option value="ABM">ABM</option>
+  <option value="ZBM">ZBM</option>
+</select>
+        </div>
 
-              <div className="flex justify-end gap-3">
-                <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpload}
-                  disabled={isUploading}
-                  className={`px-6 py-2 rounded-md text-white font-medium ${
-                    isUploading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-                >
-                  {isUploading ? "Uploading..." : "Upload Files"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Data Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Data Date
+          </label>
+          <input
+            type="date"
+            value={uploadDate}
+            onChange={(e) => setUploadDate(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Regional Manager File */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Regional Manager File
+          </label>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={(e) =>
+              handleFileUpload("file1", e.target.files?.[0] || null)
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          />
+        </div>
+
+        {/* Sales Data File */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Sales Data File
+          </label>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={(e) =>
+              handleFileUpload("file2", e.target.files?.[0] || null)
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleUpload}
+          disabled={isUploading}
+          className={`px-6 py-2 rounded-md text-white font-medium ${
+            isUploading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {isUploading ? "Uploading..." : "Upload Files"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6">

@@ -1,162 +1,228 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Edit, TrendingUp, X } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Edit, TrendingUp, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { addBrand, getBrands } from "../../axios/api"; // adjust the path
 
 interface Brand {
-  id: number;
-  name: string;
+  brandId: string;
+  brandName: string;
 }
 
 const Dashboard: React.FC = () => {
-  const [brands, setBrands] = useState<Brand[]>([
-    { id: 1, name: 'Nicotex' },
-    { id: 2, name: 'Ciplox' },
-    { id: 3, name: 'Foracort' }
-  ]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [newBrandName, setNewBrandName] = useState<string>('');
+  const [newBrandName, setNewBrandName] = useState<string>("");
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
+  const navigate = useNavigate();
+
+  // ✅ Fetch brands from API
+useEffect(() => {
+  const fetchBrands = async () => {
+    try {
+      setLoading(true);
+      const response = await getBrands();
+      // Map backend -> frontend model
+      const mappedBrands: Brand[] = response.data.map((b: any) => ({
+        brandId: b.brandId,
+        brandName: b.brandName,
+      }));
+      setBrands(mappedBrands);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load brands. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBrands();
+}, []);
+
+  // Handlers (still local for now)
   const handleAddBrand = (): void => {
     if (newBrandName.trim()) {
-      setBrands([...brands, { id: Date.now(), name: newBrandName.trim() }]);
-      setNewBrandName('');
-      setIsModalOpen(false);
+      setLoading(true)
+      try {
+        addBrand({brandName: newBrandName})
+        setBrands([...brands, { brandId: Date.now().toString(), brandName: newBrandName.trim() }]);
+        setNewBrandName("");
+        setIsModalOpen(false);
+      } catch (error) {
+        console.log(error)
+      }finally{
+        setLoading(false)
+      }
     }
   };
 
   const handleEditBrand = (brand: Brand): void => {
     setEditingBrand(brand);
-    setNewBrandName(brand.name);
+    setNewBrandName(brand.brandName);
     setIsModalOpen(true);
   };
 
   const handleUpdateBrand = (): void => {
     if (newBrandName.trim() && editingBrand) {
-      setBrands(brands.map(b => 
-        b.id === editingBrand.id ? { ...b, name: newBrandName.trim() } : b
-      ));
-      setNewBrandName('');
+      setBrands(
+        brands.map((b) =>
+          b.brandId === editingBrand.brandId ? { ...b, name: newBrandName.trim() } : b
+        )
+      );
+      setNewBrandName("");
       setEditingBrand(null);
       setIsModalOpen(false);
     }
   };
 
-  const handleDeleteBrand = (id: number): void => {
-    setBrands(brands.filter(b => b.id !== id));
+  const handleDeleteBrand = (id: string): void => {
+    setBrands(brands.filter((b) => b.brandId !== id));
   };
 
   const handleModalClose = (): void => {
     setIsModalOpen(false);
-    setNewBrandName('');
+    setNewBrandName("");
     setEditingBrand(null);
   };
-   const navigate = useNavigate();
+
   const handleInsights = (brandName: string): void => {
-    // Navigate to insights page and pass brandName in URL
     navigate(`/insights/${brandName}`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Header Section */}
-        <div className="mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <div className="inline-block mb-2 px-4 py-1 bg-blue-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
-                Pharma Excellence
-              </div>
-              <h1 className="text-5xl font-black text-gray-900 mb-2">
-                Cipla Brands
-              </h1>
-              <p className="text-lg text-gray-600 font-medium">Your complete brand management solution</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="bg-white px-8 py-4 rounded-2xl shadow-lg border-2 border-blue-100">
-                <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mb-1">Portfolio</p>
-                <p className="text-3xl font-black text-gray-900">{brands.length}</p>
-              </div>
-            </div>
+        {/* Loader */}
+        {loading && (
+          <div className="flex justify-center items-center py-40">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-        </div>
+        )}
 
-        {/* Brands Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-24">
-          {brands.map((brand: Brand) => (
-            <div 
-              key={brand.id} 
-              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-gray-100 hover:border-blue-300 transform hover:-translate-y-2 h-56"
-            >
-              <div className="relative p-6 h-full flex flex-col">
-                <div className="mb-auto">
-                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <span className="text-xl font-semibold text-white">{brand.name.charAt(0)}</span>
+        {/* Error */}
+        {error && (
+          <p className="text-center text-red-500 font-medium py-10">{error}</p>
+        )}
+
+        {/* Main UI */}
+        {!loading && !error && (
+          <>
+            {/* Header Section */}
+            <div className="mb-10">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <div>
+                  <div className="inline-block mb-2 px-4 py-1 bg-blue-600 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                    Pharma Excellence
                   </div>
-                  <h2 className="text-xl font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors" title={brand.name}>
-                    {brand.name}
-                  </h2>
+                  <h1 className="text-5xl font-black text-gray-900 mb-2">
+                    Cipla Brands
+                  </h1>
+                  <p className="text-lg text-gray-600 font-medium">
+                    Your complete brand management solution
+                  </p>
                 </div>
-                
-                <div className="space-y-2 mt-4 pb-4">
-                  <button 
-                    onClick={() => handleInsights(brand.name)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
-                  >
-                    <TrendingUp size={18} strokeWidth={2} />
-                    Get Insights
-                  </button>
-                  
-                  
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleEditBrand(brand)}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
-                      title="Edit"
-                    >
-                      <Edit size={16} strokeWidth={2} />
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleDeleteBrand(brand.id)}
-                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} strokeWidth={2} />
-                    </button>
+                <div className="flex items-center gap-4">
+                  <div className="bg-white px-8 py-4 rounded-2xl shadow-lg border-2 border-blue-100">
+                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wide mb-1">
+                      Portfolio
+                    </p>
+                    <p className="text-3xl font-black text-gray-900">
+                      {brands.length}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          ))}
 
-          {/* Empty State */}
-          {brands.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-20">
-              <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-xl">
-                <Plus size={50} className="text-blue-600" strokeWidth={3} />
-              </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-2">No brands yet</h3>
-              <p className="text-gray-600 text-lg mb-8">Start building your portfolio today</p>
+            {/* Brands Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-24">
+              {brands.map((brand: Brand) => (
+                <div
+                  key={brand.brandId}
+                  className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-gray-100 hover:border-blue-300 transform hover:-translate-y-2 h-56"
+                >
+                  <div className="relative p-6 h-full flex flex-col">
+                    <div className="mb-auto">
+                      <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <span className="text-xl font-semibold text-white">
+                          {brand.brandName.charAt(0)}
+                        </span>
+                      </div>
+                      <h2
+                        className="text-xl font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors"
+                        title={brand.brandName}
+                      >
+                        {brand.brandName}
+                      </h2>
+                    </div>
+
+                    <div className="space-y-2 mt-4 pb-4">
+                      <button
+                        onClick={() => handleInsights(brand.brandName)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                      >
+                        <TrendingUp size={18} strokeWidth={2} />
+                        Get Insights
+                      </button>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditBrand(brand)}
+                          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
+                          title="Edit"
+                        >
+                          <Edit size={16} strokeWidth={2} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteBrand(brand.brandId)}
+                          className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} strokeWidth={2} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Empty State */}
+              {brands.length === 0 && (
+                <div className="col-span-full flex flex-col items-center justify-center py-20">
+                  <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-xl">
+                    <Plus size={50} className="text-blue-600" strokeWidth={3} />
+                  </div>
+                  <h3 className="text-2xl font-black text-gray-900 mb-2">
+                    No brands yet
+                  </h3>
+                  <p className="text-gray-600 text-lg mb-8">
+                    Start building your portfolio today
+                  </p>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+                  >
+                    Add Your First Brand
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Add Brand Button - Fixed Position */}
+            {brands.length > 0 && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+                className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all flex items-center gap-3 transform hover:scale-110"
               >
-                Add Your First Brand
+                <Plus size={28} strokeWidth={3} />
+                <span className="text-lg">Add Brand</span>
               </button>
-            </div>
-          )}
-        </div>
-
-        {/* Add Brand Button - Fixed Position */}
-        {brands.length > 0 && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-8 rounded-3xl shadow-2xl hover:shadow-3xl transition-all flex items-center gap-3 transform hover:scale-110"
-          >
-            <Plus size={28} strokeWidth={3} />
-            <span className="text-lg">Add Brand</span>
-          </button>
+            )}
+          </>
         )}
 
         {/* Modal */}
@@ -165,16 +231,16 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-10 border-4 border-blue-100">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-4xl font-black text-gray-900">
-                  {editingBrand ? 'Edit Brand' : 'New Brand'}
+                  {editingBrand ? "Edit Brand" : "New Brand"}
                 </h2>
-                <button 
+                <button
                   onClick={handleModalClose}
                   className="text-gray-400 hover:text-gray-700 transition-colors p-2 hover:bg-gray-100 rounded-xl"
                 >
                   <X size={28} strokeWidth={2.5} />
                 </button>
               </div>
-              
+
               <div className="mb-8">
                 <label className="block text-sm font-black text-gray-900 mb-3 uppercase tracking-wide">
                   Brand Name
@@ -182,18 +248,20 @@ const Dashboard: React.FC = () => {
                 <input
                   type="text"
                   value={newBrandName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewBrandName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setNewBrandName(e.target.value)
+                  }
                   placeholder="Enter brand name"
                   className="w-full px-5 py-4 text-lg border-3 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all font-semibold"
                   onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       editingBrand ? handleUpdateBrand() : handleAddBrand();
                     }
                   }}
                   autoFocus
                 />
               </div>
-              
+
               <div className="flex gap-4">
                 <button
                   onClick={handleModalClose}
@@ -206,11 +274,11 @@ const Dashboard: React.FC = () => {
                   disabled={!newBrandName.trim()}
                   className={`flex-1 px-6 py-4 rounded-2xl font-bold text-lg transition-all ${
                     !newBrandName.trim()
-                      ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-105'
+                      ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                      : "bg-blue-600 hover:bg-blue-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-105"
                   }`}
                 >
-                  {editingBrand ? 'Update' : 'Add Brand'}
+                  {editingBrand ? "Update" : "Add Brand"}
                 </button>
               </div>
             </div>
@@ -222,6 +290,7 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
 
 
 // import React, { useState, useEffect } from 'react';
