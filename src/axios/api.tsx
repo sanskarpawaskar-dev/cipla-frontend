@@ -15,10 +15,10 @@ export const addBrand = (brand: { brandName: string }) =>
   api.post("dashboard/brands", brand);
 
 export const updateBrand = (id: number, brand: { name: string }) =>
-  api.patch(`/brands/${id}`, brand);
+  api.patch(`dashboard/brands/${id}`, brand);
 
 export const deleteBrand = (id: number) =>
-  api.delete(`/brands/${id}`);
+  api.delete(`dashboard/brands/${id}`);
 
 export const addSheets = (
   files: { file1: File; file2: File },
@@ -30,9 +30,37 @@ export const addSheets = (
   formData.append("BrandId", body.brandId);
   formData.append("BrandName", body.brandName);
   formData.append("managerType", body.managerType);
-  formData.append("Datadate", body.datadate); // must match DTO
+  formData.append("Datadate", body.datadate); // Send as string directly
 
   return api.post("sheet/add", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const getSheets = (managerType?: string, brandId?: string) => {
+  return api.get("sheet", {
+    params: {
+      managerType,
+      brandId,   // <-- add brandId
+    },
+  });
+};
+
+export const getFilteredSheets = async (
+  managerType: string,
+  year: string,
+  month: string,
+  brandId: string,   // <-- add brandId here
+  week?: string
+) => {
+  const params: any = { managerType, year, month, brandId }; // include brandId
+  if (week && week !== "All") {
+    params.week = week;
+  }
+
+  const response = await api.get(`sheet/filter`, { params });
+  return response;
+};
+
+
+

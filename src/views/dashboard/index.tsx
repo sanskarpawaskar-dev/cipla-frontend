@@ -88,9 +88,10 @@ useEffect(() => {
     setEditingBrand(null);
   };
 
-  const handleInsights = (brandName: string): void => {
-    navigate(`/insights/${brandName}`);
-  };
+const handleInsights = (brandName: string, brandId: string): void => {
+  console.log()
+  navigate(`/insights/${brandName}?id=${brandId}`);
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -139,78 +140,74 @@ useEffect(() => {
 
             {/* Brands Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-24">
-              {brands.map((brand: Brand) => (
-                <div
-                  key={brand.brandId}
-                  className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-gray-100 hover:border-blue-300 transform hover:-translate-y-2 h-56"
-                >
-                  <div className="relative p-6 h-full flex flex-col">
-                    <div className="mb-auto">
-                      <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                        <span className="text-xl font-semibold text-white">
-                          {brand.brandName.charAt(0)}
-                        </span>
-                      </div>
-                      <h2
-                        className="text-xl font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors"
-                        title={brand.brandName}
-                      >
-                        {brand.brandName}
-                      </h2>
-                    </div>
+  {brands.map((brand: Brand) => (
+    <div
+      key={brand.brandId}
+      className="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-gray-100 hover:border-blue-300 transform hover:-translate-y-2"
+    >
+      <div className="relative p-7">
+        <div className="mb-6">
+          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span className="text-2xl font-black text-white">
+              {brand.brandName.charAt(0)}
+            </span>
+          </div>
+          <h2
+            className="text-2xl font-black text-gray-900 truncate group-hover:text-blue-600 transition-colors"
+            title={brand.brandName}
+          >
+            {brand.brandName}
+          </h2>
+        </div>
 
-                    <div className="space-y-2 mt-4 pb-4">
-                      <button
-                        onClick={() => handleInsights(brand.brandName)}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
-                      >
-                        <TrendingUp size={18} strokeWidth={2} />
-                        Get Insights
-                      </button>
+        <div className="space-y-3">
+          <button
+            onClick={() => handleInsights(brand.brandName, brand.brandId)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
+          >
+            <TrendingUp size={20} strokeWidth={2.5} />
+            Get Insights
+          </button>
 
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditBrand(brand)}
-                          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
-                          title="Edit"
-                        >
-                          <Edit size={16} strokeWidth={2} />
-                        </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleEditBrand(brand)}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-105"
+              title="Edit"
+            >
+              <Edit size={18} strokeWidth={2.5} />
+            </button>
 
-                        <button
-                          onClick={() => handleDeleteBrand(brand.brandId)}
-                          className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-105"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} strokeWidth={2} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <button
+              onClick={() => handleDeleteBrand(brand.brandId)}
+              className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-105"
+              title="Delete"
+            >
+              <Trash2 size={18} strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
 
-              {/* Empty State */}
-              {brands.length === 0 && (
-                <div className="col-span-full flex flex-col items-center justify-center py-20">
-                  <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-xl">
-                    <Plus size={50} className="text-blue-600" strokeWidth={3} />
-                  </div>
-                  <h3 className="text-2xl font-black text-gray-900 mb-2">
-                    No brands yet
-                  </h3>
-                  <p className="text-gray-600 text-lg mb-8">
-                    Start building your portfolio today
-                  </p>
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
-                  >
-                    Add Your First Brand
-                  </button>
-                </div>
-              )}
-            </div>
+  {/* Empty State */}
+  {brands.length === 0 && (
+    <div className="col-span-full flex flex-col items-center justify-center py-20">
+      <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-xl">
+        <Plus size={50} className="text-blue-600" strokeWidth={3} />
+      </div>
+      <h3 className="text-2xl font-black text-gray-900 mb-2">No brands yet</h3>
+      <p className="text-gray-600 text-lg mb-8">Start building your portfolio today</p>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+      >
+        Add Your First Brand
+      </button>
+    </div>
+  )}
+</div>
 
             {/* Add Brand Button - Fixed Position */}
             {brands.length > 0 && (
